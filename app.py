@@ -43,16 +43,8 @@ button[kind="primary"] {
 """, unsafe_allow_html=True)
 
 
-button[kind="primary"] {
-    background-color: #6A5ACD !important;
-    color: white !important;
-    border-radius: 8px !important;
-}
 
-.streamlit-expander {
-    background: #FFF4DC !important;
-    border-radius: 10px !important;
-    margin-bottom:
+
 
 
 # ===== BANNER =====
