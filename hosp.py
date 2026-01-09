@@ -86,6 +86,41 @@ def calculate_risk(child, mother, father, inh):
 # MAIN PROGRAM
 # ------------------------------------------------------------
 
+def predict_from_inputs(
+    gm_aff, gf_aff,
+    mother_aff, father_aff,
+    sibling_aff,
+    child_gender, child_aff,
+    inheritance_type
+):
+    mother = Person("Mother", "female", mother_aff)
+    father = Person("Father", "male", father_aff)
+    child = Person("Child", child_gender, child_aff)
+
+    mother.carrier_prob = predict_carrier(
+        mother, generation=2,
+        affected_parent=(gm_aff or gf_aff),
+        affected_sibling=False,
+        affected_child=child_aff
+    )
+
+    father.carrier_prob = predict_carrier(
+        father, generation=2,
+        affected_parent=False,
+        affected_sibling=False,
+        affected_child=child_aff
+    )
+
+    risk, rule = calculate_risk(child, mother, father, inheritance_type)
+
+    return {
+        "mother_prob": mother.carrier_prob,
+        "father_prob": father.carrier_prob,
+        "risk": risk,
+        "rule": rule
+    }
+
+
 def main():
     print("\n=== ML-BASED GENETIC RISK PREDICTOR (3 GENERATIONS) ===\n")
 
@@ -139,6 +174,8 @@ def main():
     print(f"FINAL PREDICTED RISK: {risk*100:.2f}%")
     print("\n===============================================\n")
 
+    
+
 
 # ------------------------------------------------------------
 # Entry point
@@ -146,3 +183,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
