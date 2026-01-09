@@ -3,7 +3,6 @@
 
 
 
-import streamlit as st
 
 import streamlit as st
 
@@ -51,7 +50,7 @@ st.markdown(
 )
 
 
-st.set_page_config(page_title="Bayesian Genetic Risk App", layout="wide")
+#st.set_page_config(page_title="Bayesian Genetic Risk App", layout="wide")
 
 # ---------- CSS FOR ANIMATION ----------
 st.markdown("""
