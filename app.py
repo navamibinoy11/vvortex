@@ -5,6 +5,52 @@
 
 import streamlit as st
 
+import streamlit as st
+
+# ===== GLOBAL PAGE CONFIG =====
+st.set_page_config(
+    page_title="Bayesian Genetic Risk Estimation",
+    page_icon="🧬",
+    layout="wide"
+)
+
+# ===== BANNER CSS =====
+st.markdown(
+    f"""
+    <style>
+    .banner {{
+        position: relative;
+        width: 100%;
+        height: 280px;
+        background-image: linear-gradient(
+            rgba(0, 0, 0, 0.45),
+            rgba(0, 0, 0, 0.45)
+        ), url("https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/banner.jpg");
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+        margin-bottom: 25px;
+    }}
+    .banner h1 {{
+        color: white;
+        font-size: 48px;
+        margin: 0;
+        text-shadow: 1px 1px 10px rgba(0,0,0,0.7);
+        font-family: 'Segoe UI', sans-serif;
+    }}
+    </style>
+
+    <div class="banner">
+        <h1>Bayesian Genetic Risk Estimation</h1>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
 st.set_page_config(page_title="Bayesian Genetic Risk App", layout="wide")
 
 # ---------- CSS FOR ANIMATION ----------
