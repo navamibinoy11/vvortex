@@ -5,61 +5,7 @@
 
 import streamlit as st
 
-css = """
-/* Import Google Font */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
-/* Change global font */
-html, body, [class*="css"] {
-    font-family: 'Poppins', sans-serif;
-}
-
-/* Header style */
-h1, h2, h3 {
-    color: #1e3d58;
-    font-weight: 600;
-}
-
-/* Container styling */
-div.block-container {
-    padding: 2rem 3rem;
-    background: #f7f9fc;
-    border-radius: 10px;
-}
-
-/* Buttons */
-button[kind="primary"] {
-    background-color: #2563eb !important;
-    color: white !important;
-    border-radius: 8px !important;
-    padding: 0.6rem 1.2rem !important;
-    border: none !important;
-    transition: all 0.2s ease;
-}
-
-button[kind="primary"]:hover {
-    transform: scale(1.04);
-    background-color: #1d4ed8 !important;
-}
-
-/* Input boxes */
-input, textarea {
-    border-radius: 8px !important;
-}
-
-/* Tables */
-table {
-    border-collapse: collapse;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-/* Hide footer & menu if desired */
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-"""
-
-st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 
 # ============================================================
