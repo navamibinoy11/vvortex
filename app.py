@@ -1,8 +1,14 @@
 import streamlit as st
+import pandas as pd
+
+# Import backend modules
+from generate import generate_dataset
+from train import train_model
+from hosp import Person, predict_carrier, calculate_risk
 
 # ===== GLOBAL PAGE CONFIG =====
 st.set_page_config(
-    page_title="Bayesian Genetic Risk Estimation",
+    page_title="Genetic Carrier ML Pipeline",
     page_icon="🧬",
     layout="wide"
 )
@@ -10,221 +16,125 @@ st.set_page_config(
 # ===== GLOBAL STYLING =====
 st.markdown("""
 <style>
-
 html, body, [class*="css"] {
     font-family: 'Segoe UI', sans-serif;
-    background: #FAF8F6;
 }
-
-h1, h2, h3 {
-    color: #4B0082;
-}
-
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #FFDEC8, #FFEEDD);
-}
-
-button[kind="primary"] {
-    background-color: #6A5ACD !important;
-    color: white !important;
-    border-radius: 8px !important;
-}
-
-.streamlit-expander {
-    background: #FFF4DC !important;
-    border-radius: 10px !important;
-    margin-bottom: 10px !important;
-}
-
-.streamlit-expanderHeader {
-    font-size: 18px;
-    color: #4B0082;
-    font-weight: 600;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
 
-# ===== BANNER =====
-st.markdown(
-    f"""
-    <style>
-    .banner {{
-        width: 100%;
-        height: 260px;
-        background-image: linear-gradient(
-            rgba(255, 255, 255, 0.2),
-            rgba(250, 235, 215, 0.7)
-        ), url("YOUR_RAW_GITHUB_BANNER_LINK_HERE");
-        background-size: cover;
-        background-position: center;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 30px;
-    }}
-    .banner h1 {{
-        font-size: 50px;
-        color: #4B0082;
-        text-shadow: 1px 1px 4px #fff;
-        font-weight: 600;
-    }}
-    </style>
-    <div class="banner">
-        <h1>Bayesian Genetic Risk Estimation</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+st.title("🧬 Genetic Carrier Prediction Platform (Bayesian + ML)")
 
-# ============================================================
-# BAYESIAN GENETIC INHERITANCE MODEL (WEB VERSION)
-# ============================================================
+# ===== SESSION STATE INITIALIZATION =====
+if "df" not in st.session_state:
+    st.session_state.df = None
 
-class Person:
-    def __init__(self, name, gender, affected=False):
-        self.name = name
-        self.gender = gender
-        self.affected = affected
-        self.mother = None
-        self.father = None
-        self.children = []
-        self.carrier_prob = None
+if "model" not in st.session_state:
+    st.session_state.model = None
+
+# ===== TABS =====
+tab1, tab2, tab3, tab4 = st.tabs([
+    "1️⃣ Generate Dataset",
+    "2️⃣ Train ML Model",
+    "3️⃣ Predict Risk",
+    "4️⃣ View Dataset"
+])
 
 
-POPULATION_CARRIER_RATE = 0.02
+# ==================== TAB 1: DATA GENERATION ====================
+with tab1:
+    st.header("📁 Generate Synthetic Genetic Dataset")
+
+    rows = st.slider("Number of samples to generate:", 1000, 20000, 5000)
+
+    if st.button("Generate Dataset"):
+        df = generate_dataset(rows)
+        st.session_state.df = df
+        df.to_csv("synthetic_genetic_data.csv", index=False)
+        st.success(f"Generated {rows} records & saved to synthetic_genetic_data.csv")
+        st.dataframe(df.head())
 
 
-def infer_carrier_probability(person):
-    if person.affected:
-        return 1.0, "Person is affected → carrier probability = 100%"
-    for child in person.children:
-        if child.affected:
-            return 1.0, "Affected child → parent must be a carrier"
-    if person.mother:
-        for sib in person.mother.children:
-            if sib is not person and sib.affected:
-                return 0.67, "Affected sibling → posterior ≈ 67%"
-    return POPULATION_CARRIER_RATE, "No family history → population prior"
+# ==================== TAB 2: TRAIN ML MODEL ====================
+with tab2:
+    st.header("🤖 Train Machine Learning Model")
 
-
-def x_linked_child_risk(mother, child_gender):
-    if mother.affected:
-        return 1.0, "Mother affected → 100% risk"
-    if child_gender == "male":
-        return mother.carrier_prob, "Male inherits X chromosome from mother"
+    if st.session_state.df is None:
+        st.warning("Please generate dataset first in Step 1.")
     else:
-        return mother.carrier_prob * 0.5, "Female has 50% chance from mother"
+        if st.button("Train Logistic Regression Model"):
+            model, acc, auc, *_ = train_model()
+            st.session_state.model = model
+            st.success("Model trained successfully!")
+            st.write(f"**Accuracy:** {acc:.4f}")
+            st.write(f"**ROC-AUC Score:** {auc:.4f}")
 
 
-def calculate_child_risk(child, inheritance_type):
-    explanation = []
-    if inheritance_type == "AR":
-        m = child.mother.carrier_prob
-        f = child.father.carrier_prob
-        risk = m * f * 0.25
-        explanation += [
-            "Autosomal Recessive Inheritance",
-            "Child affected only if both parents pass allele",
-            f"Risk = {m:.2f} × {f:.2f} × 0.25"
-        ]
-        return risk, explanation
+# ==================== TAB 3: PREDICT RISK USING ML ====================
+with tab3:
+    st.header("🎯 Predict Carrier Risk Using ML Model")
 
-    elif inheritance_type == "XL":
-        risk, reason = x_linked_child_risk(child.mother, child.gender)
-        explanation += ["X-Linked Inheritance", reason]
-        return risk, explanation
+    if st.session_state.model is None:
+        st.warning("Train the model first in Step 2.")
+    else:
+        st.subheader("Family History Input")
 
+        col1, col2 = st.columns(2)
 
-# ===== MAIN CONTENT =====
-st.caption("For educational use • Not medical advice 🧑‍⚕️")
+        with col1:
+            mother_aff = st.checkbox("Mother affected?")
+            maternal_gp = st.checkbox("Maternal grandparent affected?")
+            sibling_aff = st.checkbox("Sibling affected?")
 
-st.header("👨‍👩‍👧 Family History Input")
+        with col2:
+            father_aff = st.checkbox("Father affected?")
+            paternal_gp = st.checkbox("Paternal grandparent affected?")
+            child_aff = st.checkbox("Child affected?")
 
-col1, col2 = st.columns(2)
+        child_gender = st.selectbox("Child gender:", ["male", "female"])
+        inh = st.selectbox("Inheritance pattern:", ["AR", "AD", "XL"])
 
-with col1:
-    gm_aff = st.checkbox("Grandmother affected")
-    m_aff = st.checkbox("Mother affected")
+        if st.button("Compute ML Risk Prediction"):
+            # Create persons
+            mother = Person("Mother", "female", mother_aff)
+            father = Person("Father", "male", father_aff)
+            child = Person("Child", child_gender, child_aff)
 
-with col2:
-    gf_aff = st.checkbox("Grandfather affected")
-    f_aff = st.checkbox("Father affected")
+            # ML carrier probability predictions
+            mother.carrier_prob = predict_carrier(
+                mother, generation=2, affected_parent=maternal_gp,
+                affected_sibling=sibling_aff, affected_child=child_aff
+            )
 
-child_gender = st.selectbox("Child gender:", ["male", "female"])
-child_aff = st.checkbox("Child affected")
-inheritance_type = st.selectbox("Inheritance type:", ["AR", "XL"])
+            father.carrier_prob = predict_carrier(
+                father, generation=2, affected_parent=paternal_gp,
+                affected_sibling=sibling_aff, affected_child=child_aff
+            )
 
-if st.button("Calculate Risk"):
-    grandmother = Person("Grandmother", "female", gm_aff)
-    grandfather = Person("Grandfather", "male", gf_aff)
-    mother = Person("Mother", "female", m_aff)
-    father = Person("Father", "male", f_aff)
-    child = Person("Child", child_gender, child_aff)
+            st.write(f"**Mother carrier probability:** {mother.carrier_prob*100:.2f}%")
+            st.write(f"**Father carrier probability:** {father.carrier_prob*100:.2f}%")
 
-    mother.mother = grandmother
-    mother.father = grandfather
-    grandmother.children.append(mother)
-    grandfather.children.append(mother)
+            # Risk calculation
+            risk, rule = calculate_risk(child, mother, father, inh)
 
-    child.mother = mother
-    child.father = father
-    mother.children.append(child)
-    father.children.append(child)
-
-    st.subheader("📊 Carrier Probability Inference")
-    for p in [grandmother, grandfather, mother, father]:
-        prob, reason = infer_carrier_probability(p)
-        p.carrier_prob = prob
-        st.write(f"**{p.name}**: {prob*100:.2f}% — {reason}")
-
-    risk, explanation = calculate_child_risk(child, inheritance_type)
-
-    st.subheader("🎯 Child Risk Result")
-    for line in explanation:
-        st.write("•", line)
-
-    st.success(f"Final estimated risk: **{risk*100:.2f}%**")
+            st.subheader("📌 Final Predicted Risk")
+            st.success(f"**{risk*100:.2f}%** likelihood based on ML + inheritance rule")
+            st.caption(f"Rule applied: {rule}")
 
 
-# ===== EXPANDERS (INFO BOXES) =====
-st.header("📖 Genetic Inheritance Concepts")
+# ==================== TAB 4: VIEW DATASET ====================
+with tab4:
+    st.header("📊 View or Download Latest Dataset")
 
-with st.expander("How Does Bayesian Analysis Work?"):
-    st.write("""
-    Bayesian analysis updates a probability after considering new evidence.
-    Posterior = (Prior × Likelihood) / Evidence.
-    """)
+    if st.session_state.df is None:
+        st.info("Dataset not generated yet.")
+    else:
+        st.dataframe(st.session_state.df)
 
-with st.expander("Autosomal Recessive Inheritance"):
-    st.write("""
-    A person must inherit two mutated alleles (one from each parent) to be affected.
-    Examples: cystic fibrosis, Tay-Sachs disease.
-    """)
-
-with st.expander("X-Linked Inheritance"):
-    st.write("""
-    Mutations occur on the X chromosome. Males are often more affected as they have one X chromosome.
-    """)
-
-with st.expander("Carrier Status"):
-    st.write("""
-    A carrier has one mutated and one normal allele. Carriers typically show no symptoms.
-    """)
-
-with st.expander("How to Interpret Your Results"):
-    st.write("""
-    The final percentage reflects updated genetic risk based on family history.
-    """)
-
-
-# ===== FOOTER =====
-st.markdown("""
-<hr>
-<div style='text-align:center; color:grey;'>
-Made with ❤️ for educational genetics visualization.
-</div>
-""", unsafe_allow_html=True)
-
+        csv = st.session_state.df.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            label="⬇ Download Dataset as CSV",
+            data=csv,
+            file_name="synthetic_genetic_data.csv",
+            mime="text/csv"
+        )
