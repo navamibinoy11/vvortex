@@ -8,21 +8,40 @@ st.set_page_config(
 )
 
 # ===== GLOBAL STYLING =====
+
+
 st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 
 html, body, [class*="css"] {
-    font-family: 'Segoe UI', sans-serif;
-    background: #FAF8F6;
+    font-family: 'Poppins', sans-serif !important;
+    background: #EAF6F6 !important;
 }
 
 h1, h2, h3 {
-    color: #4B0082;
+    color: #1B9AAA !important;
 }
 
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #FFDEC8, #FFEEDD);
+button[kind="primary"] {
+    background-color: #1B9AAA !important;
+    color: white !important;
+    border-radius: 6px !important;
+    font-size: 16px !important;
 }
+
+.streamlit-expanderHeader {
+    color: #1B9AAA !important;
+}
+
+.streamlit-expander {
+    background: #FFFFFF !important;
+    border-radius: 8px !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 
 button[kind="primary"] {
     background-color: #6A5ACD !important;
@@ -33,17 +52,7 @@ button[kind="primary"] {
 .streamlit-expander {
     background: #FFF4DC !important;
     border-radius: 10px !important;
-    margin-bottom: 10px !important;
-}
-
-.streamlit-expanderHeader {
-    font-size: 18px;
-    color: #4B0082;
-    font-weight: 600;
-}
-
-</style>
-""", unsafe_allow_html=True)
+    margin-bottom:
 
 
 # ===== BANNER =====
