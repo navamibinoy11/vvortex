@@ -4,21 +4,21 @@
 
 
 import streamlit as st
-st.set_page_config(page_title="Test", layout="wide")
 
+st.set_page_config(page_title="Bayesian Genetic Risk App", layout="wide")
+
+# ---------- CSS FOR ANIMATION ----------
 st.markdown("""
 <style>
 .slide-in {
-  animation: slideIn 1.5s ease-out;
+  animation: slideIn 1s ease-out;
 }
 @keyframes slideIn {
-  from {transform: translateY(50px); opacity: 0;}
-  to {transform: translateY(0); opacity: 1;}
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 </style>
 """, unsafe_allow_html=True)
-
-st.markdown('<h2 class="slide-in">Animated Content Loaded!</h2>', unsafe_allow_html=True)
 
 
 
@@ -145,7 +145,11 @@ if st.button("Calculate Risk"):
     for p in [grandmother, grandfather, mother, father]:
         prob, reason = infer_carrier_probability(p)
         p.carrier_prob = prob
-        st.write(f"**{p.name}**: {prob*100:.2f}% — {reason}")
+        st.markdown(f'''
+<div class="slide-in" style="font-size: 24px; font-weight: bold; color: #0b3d91;">
+Final Risk of Child Being Affected: {risk*100:.2f}%
+</div>
+''', unsafe_allow_html=True)
 
     # Calculate child risk
     risk, explanation = calculate_child_risk(child, inheritance_type)
