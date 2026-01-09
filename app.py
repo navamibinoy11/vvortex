@@ -42,28 +42,10 @@ st.markdown(
     }}
     </style>
 
-    <div class="banner">
-        <h1>Bayesian Genetic Risk Estimation</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
+    
 
 #st.set_page_config(page_title="Bayesian Genetic Risk App", layout="wide")
 
-# ---------- CSS FOR ANIMATION ----------
-st.markdown("""
-<style>
-.slide-in {
-  animation: slideIn 1s ease-out;
-}
-@keyframes slideIn {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-</style>
-""", unsafe_allow_html=True)
 
 
 
