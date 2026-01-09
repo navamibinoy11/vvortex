@@ -1,38 +1,35 @@
 import streamlit as st
 import pandas as pd
+import subprocess
+import os
 
-# Import backend modules
-from generate import generate_dataset
 from train import train_model
 from hosp import Person, predict_carrier, calculate_risk
 
-# ===== GLOBAL PAGE CONFIG =====
+# =====================
+# PAGE CONFIG
+# =====================
 st.set_page_config(
     page_title="Genetic Carrier ML Pipeline",
     page_icon="🧬",
     layout="wide"
 )
 
-# ===== GLOBAL STYLING =====
-st.markdown("""
-<style>
-html, body, [class*="css"] {
-    font-family: 'Segoe UI', sans-serif;
-}
-</style>
-""", unsafe_allow_html=True)
+st.title("🧬 Genetic Carrier Prediction Platform (ML-Powered)")
 
-
-st.title("🧬 Genetic Carrier Prediction Platform (Bayesian + ML)")
-
-# ===== SESSION STATE INITIALIZATION =====
+# =====================
+# SESSION STATE SETUP
+# =====================
 if "df" not in st.session_state:
     st.session_state.df = None
 
 if "model" not in st.session_state:
     st.session_state.model = None
 
-# ===== TABS =====
+
+# =====================
+# TABS
+# =====================
 tab1, tab2, tab3, tab4 = st.tabs([
     "1️⃣ Generate Dataset",
     "2️⃣ Train ML Model",
@@ -41,41 +38,55 @@ tab1, tab2, tab3, tab4 = st.tabs([
 ])
 
 
-# ==================== TAB 1: DATA GENERATION ====================
+# =====================
+# TAB 1 — DATA GENERATION
+# =====================
 with tab1:
     st.header("📁 Generate Synthetic Genetic Dataset")
 
-    rows = st.slider("Number of samples to generate:", 1000, 20000, 5000)
+    rows = st.slider("Number of rows:", 1000, 20000, 5000)
 
     if st.button("Generate Dataset"):
-        df = generate_dataset(rows)
-        st.session_state.df = df
-        df.to_csv("synthetic_genetic_data.csv", index=False)
-        st.success(f"Generated {rows} records & saved to synthetic_genetic_data.csv")
-        st.dataframe(df.head())
+        # Run generate.py as script
+        st.write("Generating dataset...")
+
+        # Pass row count as argument
+        subprocess.run(["python3", "generate.py"], check=True)
+
+        if os.path.exists("synthetic_genetic_data.csv"):
+            df = pd.read_csv("synthetic_genetic_data.csv")
+            st.session_state.df = df
+            st.success("Dataset created successfully!")
+            st.dataframe(df.head())
+        else:
+            st.error("Dataset not found. Ensure generate.py saves CSV as 'synthetic_genetic_data.csv'.")
 
 
-# ==================== TAB 2: TRAIN ML MODEL ====================
+# =====================
+# TAB 2 — TRAIN MODEL
+# =====================
 with tab2:
-    st.header("🤖 Train Machine Learning Model")
+    st.header("🤖 Train ML Model")
 
     if st.session_state.df is None:
-        st.warning("Please generate dataset first in Step 1.")
+        st.warning("Generate dataset first.")
     else:
-        if st.button("Train Logistic Regression Model"):
+        if st.button("Train Model"):
             model, acc, auc, *_ = train_model()
             st.session_state.model = model
-            st.success("Model trained successfully!")
-            st.write(f"**Accuracy:** {acc:.4f}")
-            st.write(f"**ROC-AUC Score:** {auc:.4f}")
+            st.success("Model Trained Successfully!")
+            st.write(f"**Accuracy:** {acc:.3f}")
+            st.write(f"**ROC-AUC:** {auc:.3f}")
 
 
-# ==================== TAB 3: PREDICT RISK USING ML ====================
+# =====================
+# TAB 3 — INFERENCE (ML + RISK)
+# =====================
 with tab3:
-    st.header("🎯 Predict Carrier Risk Using ML Model")
+    st.header("🎯 ML-Based Carrier Risk Prediction")
 
     if st.session_state.model is None:
-        st.warning("Train the model first in Step 2.")
+        st.warning("Train the model first.")
     else:
         st.subheader("Family History Input")
 
@@ -94,47 +105,44 @@ with tab3:
         child_gender = st.selectbox("Child gender:", ["male", "female"])
         inh = st.selectbox("Inheritance pattern:", ["AR", "AD", "XL"])
 
-        if st.button("Compute ML Risk Prediction"):
-            # Create persons
+        if st.button("Predict Risk"):
             mother = Person("Mother", "female", mother_aff)
             father = Person("Father", "male", father_aff)
             child = Person("Child", child_gender, child_aff)
 
-            # ML carrier probability predictions
+            # ML carrier probabilities
             mother.carrier_prob = predict_carrier(
-                mother, generation=2, affected_parent=maternal_gp,
-                affected_sibling=sibling_aff, affected_child=child_aff
+                mother, 2, maternal_gp, sibling_aff, child_aff
             )
-
             father.carrier_prob = predict_carrier(
-                father, generation=2, affected_parent=paternal_gp,
-                affected_sibling=sibling_aff, affected_child=child_aff
+                father, 2, paternal_gp, sibling_aff, child_aff
             )
 
             st.write(f"**Mother carrier probability:** {mother.carrier_prob*100:.2f}%")
             st.write(f"**Father carrier probability:** {father.carrier_prob*100:.2f}%")
 
-            # Risk calculation
+            # Genetic risk estimate
             risk, rule = calculate_risk(child, mother, father, inh)
-
-            st.subheader("📌 Final Predicted Risk")
-            st.success(f"**{risk*100:.2f}%** likelihood based on ML + inheritance rule")
+            st.subheader("📌 Final Genetic Risk Prediction")
+            st.success(f"Estimated child risk: **{risk*100:.2f}%**")
             st.caption(f"Rule applied: {rule}")
 
 
-# ==================== TAB 4: VIEW DATASET ====================
+# =====================
+# TAB 4 — DATA VIEWER
+# =====================
 with tab4:
-    st.header("📊 View or Download Latest Dataset")
+    st.header("📊 View Synthetic Dataset")
 
     if st.session_state.df is None:
-        st.info("Dataset not generated yet.")
+        st.info("No dataset loaded.")
     else:
         st.dataframe(st.session_state.df)
 
         csv = st.session_state.df.to_csv(index=False).encode("utf-8")
         st.download_button(
-            label="⬇ Download Dataset as CSV",
-            data=csv,
-            file_name="synthetic_genetic_data.csv",
-            mime="text/csv"
+            "⬇ Download Dataset CSV",
+            csv,
+            "synthetic_genetic_data.csv",
+            "text/csv"
         )
