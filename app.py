@@ -4,25 +4,24 @@
 
 
 import streamlit as st
+st.set_page_config(page_title="Test", layout="wide")
 
-# --- ANIMATION CSS (ADD ONCE AT TOP) ---
 st.markdown("""
 <style>
 .slide-in {
-  animation: slideIn 0.8s ease-out;
+  animation: slideIn 1.5s ease-out;
 }
 @keyframes slideIn {
-  from {
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from {transform: translateY(50px); opacity: 0;}
+  to {transform: translateY(0); opacity: 1;}
 }
 </style>
 """, unsafe_allow_html=True)
+
+st.markdown('<h2 class="slide-in">Animated Content Loaded!</h2>', unsafe_allow_html=True)
+
+
+
 
 
 
