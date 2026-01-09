@@ -5,6 +5,26 @@
 
 import streamlit as st
 
+# --- ANIMATION CSS (ADD ONCE AT TOP) ---
+st.markdown("""
+<style>
+.slide-in {
+  animation: slideIn 0.8s ease-out;
+}
+@keyframes slideIn {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 
 
 
