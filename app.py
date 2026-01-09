@@ -145,11 +145,7 @@ if st.button("Calculate Risk"):
     for p in [grandmother, grandfather, mother, father]:
         prob, reason = infer_carrier_probability(p)
         p.carrier_prob = prob
-        st.markdown(f'''
-<div class="slide-in" style="font-size: 24px; font-weight: bold; color: #0b3d91;">
-Final Risk of Child Being Affected: {risk*100:.2f}%
-</div>
-''', unsafe_allow_html=True)
+        st.write(f"**{p.name}**: {prob*100:.2f}% — {reason}")
 
     # Calculate child risk
     risk, explanation = calculate_child_risk(child, inheritance_type)
