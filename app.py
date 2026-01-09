@@ -154,6 +154,18 @@ if st.button("Calculate Risk"):
     st.success(f"Final estimated risk: **{risk*100:.2f}%**")
 import streamlit as st
 
+st.markdown("""
+<style>
+.streamlit-expander {
+    border: 1px solid #d3d3d3;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 with st.expander("Autosomal Recessive Inheritance"):
     st.write("""
     In autosomal recessive inheritance, a person must inherit two copies of a mutated gene
