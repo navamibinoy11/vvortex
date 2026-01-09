@@ -152,4 +152,16 @@ if st.button("Calculate Risk"):
         st.write("•", line)
 
     st.success(f"Final estimated risk: **{risk*100:.2f}%**")
+import pandas as pd
 
+st.subheader("📋 Information Table")
+
+data = {
+    "Disease": ["Cystic Fibrosis", "Huntington's", "Hemophilia A"],
+    "Inheritance Pattern": ["Autosomal Recessive", "Autosomal Dominant", "X-linked Recessive"],
+    "Risk Factor": ["25% if both parents carriers", "50% if one parent affected", "Higher risk in males"]
+}
+
+df = pd.DataFrame(data)
+
+st.dataframe(df, use_container_width=True)
